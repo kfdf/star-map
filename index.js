@@ -1,15 +1,14 @@
 import { getRegion, labelFontSize } from './field.js'
 import { showCard } from './card.js'
 
-/** @type {HTMLCanvasElement} */
 let wrapper = document.querySelector('#wrapper')
+/** @type {HTMLCanvasElement} */
 let canvas = wrapper.querySelector('#field')
 let ctx = canvas.getContext('2d', { alpha: false })
 
 let mapX = 175.2, mapY = 145, zoom = 1.5625
 let matrix, canvasMatrix = ctx.getTransform()
 let mouseMatrix, dragMatrix, mouseX, mouseY
-
 
 // let seen = new Set()
 let renderCycle = 0
@@ -116,6 +115,7 @@ async function render() {
 }
 
 document.addEventListener('wheel', event => {
+  if (hasModifier(event)) return
   zoom *= event.deltaY < 0 ? 1.25 : 0.8
   render()
 })
@@ -149,13 +149,14 @@ window.addEventListener('mouseup', event => {
 })
 window.addEventListener('resize', render)
 render()
-let excludeKeys = new Set([
-  'Alt', 'Control', 'Shift', 'Meta',
-  'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 
-  'F7', 'F8', 'F9', 'F10', 'F11', 'F12'
-])
+
+/** @param {MouseEvent} e */
+function hasModifier(e) {
+  return e.ctrlKey || e.altKey || e.shiftKey || e.metaKey
+}
 window.addEventListener('keydown', e => {
-  if (excludeKeys.has(e.key)) return
+  if (hasModifier(e)) return
+  if (/^F\d{1,2}/.test(e.key)) return
   wrapper.classList.add('readme')
 })
 window.addEventListener('keyup', e => {

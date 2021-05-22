@@ -1,5 +1,5 @@
-/** @type{HTMLCanvasElement} */
 const fontSize = 20
+/** @type{HTMLCanvasElement} */
 let canvas = document.querySelector('#card')
 let ctx = canvas.getContext('2d')
 ctx.font = fontSize + 'px monospace'
