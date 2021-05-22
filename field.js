@@ -109,6 +109,7 @@ for (let line of data.split('\n')) {
     star.planets.push(new Planet(...parts))
   }
 }
+stars.sort((a, b) => b.size - a.size)
 for (let star of stars) {
   star.planets.sort((a, b) => a.order - b.order)
 }

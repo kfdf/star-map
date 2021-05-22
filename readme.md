@@ -2,9 +2,9 @@
 
 Available [here](https://kfdf.github.io/star-map).
 
-Drag to pan. Mousewheel to zoom. Hover over a star to get a quick overview of the planets and moons in the star system. And that's all.
+Drag to pan. Use the mouse wheel to zoom. Hover over a star to get a quick overview of the planets and moons in the star system. And that's all.
 
-There is one row per planet/moon. Every row stars with an icon which roughly depicts the planet's size and color (if it's a moon, the icon is off centered). Then a three digit value describes the planetary environment - thermal, weather (always 8, the highest, for gas giants) and tectonic hazards. Then is the total mineral value of the planet, followed by the value per unit of volume, any value higher than nine is displayed as '+', but there is only one such value in the game (25). And the final value  shows the total amount of bio data for the planet.
+There is one row per planet/moon. Every row stars with an icon which roughly depicts the planet's size and color, and if it's a moon the icon is off centered. Then a three digit figure describes the planetary environment - thermal, weather and tectonic hazards. Then is the total mineral value of the planet, followed by the value per unit of volume, or '+' for non-signle digit values. And the final figure shows the total amount of bio data for the planet.
 
 Holding down any (almost) key brings up this readme.
 

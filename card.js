@@ -18,7 +18,7 @@ export function showCard(star, x, y) {
         let p = star.planets[i]
         ctx.fillStyle = p.color
         ctx.beginPath()
-        let cx = (p.isMoon ?  0.75 : 0.5) * fontSize
+        let cx = (p.isMoon ?  0.85 : 0.5) * fontSize
         let cy = (i + 1.5) * fontSize
         let size = p.size * fontSize / 2.2
         ctx.arc(cx, cy, size, 0, 2 * Math.PI)

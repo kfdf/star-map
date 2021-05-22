@@ -21,14 +21,19 @@ async function render() {
   rendering = false
   let centerX = innerWidth / 2
   let centerY = innerHeight / 2
-  if (dragMatrix != null) {
+  if (dragMatrix != null || mouseMatrix != null) {
     let { e, f } = new DOMMatrix()
       .translateSelf(centerX, centerY)
       .scaleSelf(zoom, -zoom)
       .invertSelf()
-      .translateSelf(mouseX, mouseY)
-    mapX = dragMatrix.e - e
-    mapY = dragMatrix.f - f  
+      .translateSelf(mouseX, mouseY)  
+    if (dragMatrix != null) {
+      mapX = dragMatrix.e - e
+      mapY = dragMatrix.f - f  
+    } else {
+      mapX = mouseMatrix.e - e
+      mapY = mouseMatrix.f - f  
+    }
   }
   matrix = new DOMMatrix()
     .translateSelf(centerX, centerY)
