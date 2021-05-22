@@ -64,9 +64,9 @@ function getStarColor(value) {
 }
 function getStarSize(value) {
   switch (value) {
-    case 'd': return 0.5
-    case 'g': return 0.66
-    case 's': return 1
+    case 'd': return 1.5
+    case 'g': return 2
+    case 's': return 3
     default: throw 'starSize'
   } 
 }
@@ -83,17 +83,17 @@ export class Star {
     this.renderCycle = 0
   }
 }
-let ctx = document.createElement('canvas').getContext('2d')
-ctx.font = '10px sans-serif'
+export const labelFontSize = 10
+let clusterCtx = document.createElement('canvas').getContext('2d')
+clusterCtx.font = labelFontSize + 'px sans-serif'
 
 export class Cluster {
   constructor(name, x, y) {
     this.name = name
     this.x = x
     this.y = y
-    let tm = ctx.measureText(name)
-    this.width = tm.width
-    this.height = tm.emHeightAscent + tm.emHeightDescent
+    this.width = clusterCtx.measureText(name).width
+    this.height = labelFontSize
     this.renderCycle = 0
   }
 }
@@ -145,6 +145,7 @@ for (let i = 1; i < clusters.length; i++) {
     break
   }
 }
+clusterCtx = null
 export const regions = []
 while (regions.length < 10) {
   regions.push(Array(10).fill(0)
@@ -168,8 +169,6 @@ function getRegionsForBox(x, y, w, h) {
     for (let y = y1; y < y2; y++) {
       if (x < 0 || y < 0 || x >= 10 || y >= 10) continue
       ret.push(regions[x][y])
-      
-      // ret.push(getRegion(x, y))
     }
   }
   return ret

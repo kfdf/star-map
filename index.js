@@ -1,4 +1,4 @@
-import { getRegion } from './field.js'
+import { getRegion, labelFontSize } from './field.js'
 import { showCard } from './card.js'
 
 /** @type {HTMLCanvasElement} */
@@ -79,7 +79,7 @@ async function render() {
     let y1 = Math.floor(inv.f / 100)
     let x2 = Math.ceil(inv.e / 100)
 
-    ctx.font = '10px sans-serif'
+    ctx.font = labelFontSize + 'px sans-serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'top'
     for (let x = x1; x < x2; x++) {
@@ -100,7 +100,7 @@ async function render() {
           star.renderCycle = renderCycle
           ctx.fillStyle = star.color
           ctx.beginPath()
-          ctx.arc(star.x, star.y, star.size * 3, 0, 2 * Math.PI)
+          ctx.arc(star.x, star.y, star.size, 0, 2 * Math.PI)
           ctx.fill()
         } 
       }
@@ -128,7 +128,7 @@ window.addEventListener('mousemove', event => {
   for (let star of stars) {
     let dx = Math.abs(star.x - e)
     let dy = Math.abs(star.y - f)
-    if (dx > star.size * 6 || dy > star.size * 6) continue
+    if (dx > star.size * 2 || dy > star.size * 2) continue
     let dist = Math.max(dx, dy)
     if (dist > closestDist) continue
     closestDist = dist
