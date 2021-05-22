@@ -144,12 +144,15 @@ window.addEventListener('mouseup', event => {
 })
 window.addEventListener('resize', render)
 render()
-let excludeKeys = ['Alt', 'Control', 'Shift', 'Meta']
+let excludeKeys = new Set([
+  'Alt', 'Control', 'Shift', 'Meta',
+  'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 
+  'F7', 'F8', 'F9', 'F10', 'F11', 'F12'
+])
 window.addEventListener('keydown', e => {
-  if (excludeKeys.includes(e.key)) return
+  if (excludeKeys.has(e.key)) return
   wrapper.classList.add('readme')
 })
 window.addEventListener('keyup', e => {
-  if (excludeKeys.includes(e.key)) return
   wrapper.classList.remove('readme')
 })
