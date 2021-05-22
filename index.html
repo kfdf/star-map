@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Star Control 2/UQM resources map</title>
   <style>
-    body {
+    * {
       margin: 0;
+      box-sizing: border-box;
     }
     #wrapper {
       overflow: hidden;
@@ -22,6 +23,27 @@
       left: 0;
       display: none;
     }
+    #readme {
+      font-family: sans-serif;
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      color: black;
+      padding: 10px;
+      border-radius: 5px;
+      pointer-events: none;
+      width: 30rem;
+      max-width: 100%;  
+    }
+    #readme > * + * {
+      margin-top: 5px;
+    }
+    #wrapper.readme #readme {
+      display: block;
+    }
   </style>
   <script type="module" src="index.js"></script>
 </head>
@@ -29,6 +51,15 @@
   <div id="wrapper">
     <canvas id="field"></canvas>
     <canvas id="card"></canvas>
+    <div id="readme">
+      <h4>Star Control 2/UQM resource map</h4>
+      <p>
+        Drag to pan. Mousewheel to zoom. Hover over a star to get a quick overview of the planets and moons in the star system.
+      </p>
+      <p>
+        There is one row per planet/moon. Every row stars with an icon which roughly depicts the planet's size and color (if it's a moon, the icon is off centered), then go hazards - thermal, weather (always 8 for gas giants) and tectonic, then the total mineral value of the planet, then the value per unit of volume, any value higher than nine is depicted as '+', but there is only one such value in the game (25) for exotic worlds, and finally goes the total bio data.
+      </p>
+    </div>
   </div>
 </body>
 </html>

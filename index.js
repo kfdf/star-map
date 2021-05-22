@@ -2,7 +2,8 @@ import { getRegion, labelFontSize } from './field.js'
 import { showCard } from './card.js'
 
 /** @type {HTMLCanvasElement} */
-let canvas = document.querySelector('#field')
+let wrapper = document.querySelector('#wrapper')
+let canvas = wrapper.querySelector('#field')
 let ctx = canvas.getContext('2d', { alpha: false })
 
 let mapX = 175.2, mapY = 145, zoom = 1.5625
@@ -143,3 +144,12 @@ window.addEventListener('mouseup', event => {
 })
 window.addEventListener('resize', render)
 render()
+let excludeKeys = ['Alt', 'Control', 'Shift', 'Meta']
+window.addEventListener('keydown', e => {
+  if (excludeKeys.includes(e.key)) return
+  wrapper.classList.add('readme')
+})
+window.addEventListener('keyup', e => {
+  if (excludeKeys.includes(e.key)) return
+  wrapper.classList.remove('readme')
+})
