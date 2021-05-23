@@ -119,8 +119,10 @@ document.addEventListener('wheel', event => {
   zoom *= event.deltaY < 0 ? 1.25 : 0.8
   render()
 })
-window.addEventListener('mousedown', event => {
-  if (event.button != 0) return
+window.addEventListener('contextmenu', e => {
+  e.preventDefault()
+})
+window.addEventListener('mousedown', e => {
   dragMatrix = mouseMatrix.translate()
 })
 window.addEventListener('mousemove', event => {
@@ -144,12 +146,8 @@ window.addEventListener('mousemove', event => {
   if (dragMatrix != null) render()
 })
 window.addEventListener('mouseup', event => {
-  if (event.button != 0) return
   dragMatrix = null
 })
-window.addEventListener('resize', render)
-render()
-
 /** @param {MouseEvent} e */
 function hasModifier(e) {
   return e.ctrlKey || e.altKey || e.shiftKey || e.metaKey
@@ -162,3 +160,5 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e => {
   wrapper.classList.remove('readme')
 })
+window.addEventListener('resize', render)
+render()
