@@ -6,7 +6,9 @@ let wrapper = document.querySelector('#wrapper')
 let canvas = wrapper.querySelector('#field')
 let ctx = canvas.getContext('2d', { alpha: false })
 
-let mapX = 175.2, mapY = 145, zoom = 1.5625
+let mapX = 500, mapY = 500
+let zoom = Math.min(innerHeight, innerWidth) / 1000
+if (!(zoom > 0.1 && zoom < 10)) zoom = 1
 let matrix, canvasMatrix = ctx.getTransform()
 let mouseMatrix, dragMatrix, mouseX, mouseY
 
