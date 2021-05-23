@@ -13,6 +13,7 @@
       overflow: hidden;
       width: 100vw;
       height: 100vh;
+      touch-action: none;
     }
     #field {
       display: block;
@@ -47,6 +48,19 @@
     #wrapper.readme #readme {
       display: block;
     }
+    #touch-pointer {
+      position: fixed;
+      width: 15px;
+      height: 15px;
+      border: 2px solid lightgray;
+      transform: rotate(45deg);
+      transform-origin: top left;
+      border-bottom-color: transparent;
+      border-right-color: transparent;
+      top: 0;
+      left: 0;
+      display: none;
+    }
   </style>
   <script type="module">
     import './data.js'
@@ -68,6 +82,7 @@
         There is one row per planet/moon. Every row stars with an icon which roughly depicts the planet's size and color, and if it's a moon the icon is off centered. Then a three digit figure describes the planetary environment - thermal, weather and tectonic hazards. Then is the total mineral value of the planet, followed by the value per unit of volume, or '+' for non-signle digit values. And the final figure shows the total amount of bio data for the planet.
       </p>
     </div>
+    <div id="touch-pointer"></div>
   </div>
 </body>
 </html>

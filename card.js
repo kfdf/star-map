@@ -6,7 +6,7 @@ ctx.font = fontSize + 'px monospace'
 canvas.width = ctx.measureText(' 888 8888 8 888').width + fontSize
 let prevStar = null
 /** @param{import('./field').Star} star */
-export function showCard(star, x, y) {
+export function showCard(star, x, y, touch) {
   if (star) {
     if (star != prevStar) { 
       canvas.height = fontSize * (star.planets.length + 1)
@@ -45,8 +45,14 @@ export function showCard(star, x, y) {
       }
       canvas.style.display = 'block'
     }
-    y = Math.min(Math.max(0, innerHeight - canvas.height), y)
-    x = Math.min(Math.max(0, innerWidth - canvas.width), x + 10)
+    if (touch) {
+      x -= canvas.width / 2
+      y -= canvas.height
+    } else {
+      x += 10
+    }
+    y = Math.max(0, Math.min(innerHeight - canvas.height, y))
+    x = Math.max(0, Math.min(innerWidth - canvas.width, x))
     canvas.style.transform = `translate(${x}px, ${y}px)`
   } else if (prevStar != null) {
     canvas.style.display = ''

@@ -2,6 +2,7 @@ import { getRegion, labelFontSize } from './field.js'
 import { showCard } from './card.js'
 
 let wrapper = document.querySelector('#wrapper')
+let touchPointer = document.querySelector('#touch-pointer')
 /** @type {HTMLCanvasElement} */
 let canvas = wrapper.querySelector('#field')
 let ctx = canvas.getContext('2d', { alpha: false })
@@ -115,6 +116,28 @@ async function render() {
   }
   canvas.style.transform = `translate(-${left}px, -${top}px)`
 }
+function updateMouseMatrixAndShowCard(isTouch) {
+  mouseMatrix = matrix.inverse().translateSelf(mouseX, mouseY)    
+  let { e, f } = mouseMatrix
+  let { stars } = getRegion(Math.floor(e / 100), Math.floor(f / 100))
+  let closestStar = null
+  let closestDist = Infinity
+  for (let star of stars) {
+    let dx = Math.abs(star.x - e)
+    let dy = Math.abs(star.y - f)
+    if (dx > star.size * 3 || dy > star.size * 3) continue
+    let dist = Math.max(dx, dy)
+    if (dist > closestDist) continue
+    closestDist = dist
+    closestStar = star
+  }
+  showCard(closestStar, mouseX, mouseY, isTouch) 
+  if (isTouch) {
+    touchPointer.style.display = 'block'
+    touchPointer.style.top = mouseY + 'px'
+    touchPointer.style.left = mouseX + 'px'
+  }  
+}
 
 document.addEventListener('wheel', event => {
   if (hasModifier(event)) return
@@ -129,22 +152,8 @@ window.addEventListener('mousedown', e => {
 })
 window.addEventListener('mousemove', event => {
   mouseX = event.clientX
-  mouseY = event.clientY
-  mouseMatrix = matrix.inverse().translateSelf(mouseX, mouseY)
-  let { e, f } = mouseMatrix
-  let { stars } = getRegion(Math.floor(e / 100), Math.floor(f / 100))
-  let closestStar = null
-  let closestDist = Infinity
-  for (let star of stars) {
-    let dx = Math.abs(star.x - e)
-    let dy = Math.abs(star.y - f)
-    if (dx > star.size * 2 || dy > star.size * 2) continue
-    let dist = Math.max(dx, dy)
-    if (dist > closestDist) continue
-    closestDist = dist
-    closestStar = star
-  }
-  showCard(closestStar, mouseX, mouseY)
+  mouseY = event.clientY  
+  updateMouseMatrixAndShowCard(false)
   if (dragMatrix != null) render()
 })
 window.addEventListener('mouseup', event => {
@@ -164,3 +173,69 @@ window.addEventListener('keyup', e => {
 })
 window.addEventListener('resize', render)
 render()
+
+let firstTouch, secondTouch, touchZoom
+
+function getSame(touch, touchEvent) {
+  if (!touch) return
+  let touches = touchEvent.changedTouches
+  for (let i = 0; i < touches.length; i++) {
+    let ret = touches[i]
+    if (touch.identifier == ret.identifier) return ret
+  }
+}
+function getDistance(touch, touch2) {
+  let dx = touch.clientX - touch2.clientX
+  let dy = touch.clientY - touch2.clientY
+  return Math.sqrt(dx * dx + dy * dy)  
+}
+window.addEventListener('touchstart', event => {
+  event.preventDefault()
+  let touches = Array.from(event.changedTouches)
+  if (!firstTouch && touches.length) {
+    firstTouch = touches.shift()
+    mouseX = firstTouch.clientX
+    mouseY = firstTouch.clientY - 40   
+    updateMouseMatrixAndShowCard(true)
+  }
+  if (!secondTouch && touches.length) {
+    secondTouch = touches.shift()
+    touchZoom = zoom / getDistance(firstTouch, secondTouch)
+    dragMatrix = mouseMatrix.translate()
+  }
+})
+window.addEventListener('touchmove', event => {
+  event.preventDefault()
+  let first = getSame(firstTouch, event)
+  let second = getSame(secondTouch, event)
+  if (first) {
+    firstTouch = first
+    mouseX = firstTouch.clientX
+    mouseY = firstTouch.clientY - 40       
+    updateMouseMatrixAndShowCard(true)
+  }
+  if (second) {
+    secondTouch = second
+  }
+  if (!first && !second) return
+  if (dragMatrix) {
+    zoom = touchZoom * getDistance(firstTouch, secondTouch)
+  }
+  render()
+})
+window.addEventListener('touchend', event => {
+  event.preventDefault()
+  let first = getSame(firstTouch, event)
+  let second = getSame(secondTouch, event)
+  if (first) {
+    firstTouch = null
+    touchPointer.style.display = ''
+  }
+  if (first || second) {
+    secondTouch = null
+    dragMatrix = null
+  }
+})
+window.addEventListener('touchcancel', event => {
+  event.preventDefault()
+})
