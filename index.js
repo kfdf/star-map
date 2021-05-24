@@ -10,7 +10,9 @@ let ctx = canvas.getContext('2d', { alpha: false })
 let mapX = 500, mapY = 500
 let zoom = Math.min(innerHeight, innerWidth) / 1000
 if (!(zoom > 0.1 && zoom < 10)) zoom = 1
-let matrix, canvasMatrix = ctx.getTransform()
+let matrix, invMatrix
+let canvasMatrix = ctx.getTransform()
+let invCanvasMatrix = canvasMatrix.inverse()
 let mouseMatrix, dragMatrix, mouseX, mouseY
 
 // let seen = new Set()
@@ -41,31 +43,26 @@ async function render() {
     .translateSelf(centerX, centerY)
     .scaleSelf(zoom, -zoom)
     .translateSelf(-mapX, -mapY)  
-  // There is loss of precision if a transform matrix is 
-  // applied to a canvas and later read from it. Probably 
-  // doesn't matter, but just to be on the safe side.
-  // let canvasMatrix = ctx.getTransform()
-  let abcdSame = 
-    Math.abs(matrix.a - canvasMatrix.a) < 1e-7 &&
-    Math.abs(matrix.b - canvasMatrix.b) < 1e-7 &&
-    Math.abs(matrix.c - canvasMatrix.c) < 1e-7 &&
-    Math.abs(matrix.d - canvasMatrix.d) < 1e-7
-  let left = canvasMatrix.e - matrix.e
-  let top = canvasMatrix.f - matrix.f
-  let right = canvas.width - centerX * 2 - left
-  let bottom = canvas.height - centerY * 2 - top
-  if (!abcdSame || left < 0 || top < 0 || right < 0 || bottom < 0) {
+  invMatrix = matrix.inverse()
+  let m = canvasMatrix.multiply(invMatrix)
+  let { e: left, f: top } = m
+  m = m.translateSelf(centerX * 2, centerY * 2)
+  let { e: right, f: bottom } = m
+  if (top < 0 || left < 0 || 
+    bottom > canvas.height || 
+    right > canvas.width || 
+    (bottom - top) < canvas.height / 2 || 
+    (right - left) < canvas.width / 2
+  ) {
     renderCycle += 1
     if (renderCycle > 1e6) renderCycle = 0
     canvas.width = centerX * 3
     canvas.height = centerY * 3
-    left = centerX / 2
-    top = centerY / 2
     ctx.resetTransform()
     ctx.fillStyle = '#222'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     canvasMatrix = new DOMMatrix()
-      .translateSelf(left, top)
+      .translateSelf(centerX / 2, centerY / 2)
       .multiplySelf(matrix)
     ctx.setTransform(canvasMatrix)
     ctx.beginPath()
@@ -80,10 +77,10 @@ async function render() {
     ctx.strokeStyle = '#444'    
     ctx.stroke()
 
-    let inv = canvasMatrix.inverse()
-    let y2 = Math.ceil(inv.f / 100)
-    let x1 = Math.floor(inv.e / 100)
-    inv = inv.translateSelf(centerX * 3, centerY * 3)
+    invCanvasMatrix = canvasMatrix.inverse()
+    let y2 = Math.ceil(invCanvasMatrix.f / 100)
+    let x1 = Math.floor(invCanvasMatrix.e / 100)
+    let inv = invCanvasMatrix.translate(canvas.width, canvas.height)
     let y1 = Math.floor(inv.f / 100)
     let x2 = Math.ceil(inv.e / 100)
 
@@ -114,10 +111,10 @@ async function render() {
       }
     }    
   }
-  canvas.style.transform = `translate(-${left}px, -${top}px)`
+  canvas.style.transform = matrix.multiply(invCanvasMatrix)
 }
 function updateMouseMatrixAndShowCard(isTouch) {
-  mouseMatrix = matrix.inverse().translateSelf(mouseX, mouseY)    
+  mouseMatrix = invMatrix.translate(mouseX, mouseY)    
   let { e, f } = mouseMatrix
   let { stars } = getRegion(Math.floor(e / 100), Math.floor(f / 100))
   let closestStar = null
@@ -174,7 +171,7 @@ window.addEventListener('keyup', e => {
 window.addEventListener('resize', render)
 render()
 
-let firstTouch, secondTouch, touchDist
+let firstTouch, secondTouch, touchDist, touchZoom
 
 function getSame(touch, touchEvent) {
   if (!touch) return
@@ -201,6 +198,7 @@ window.addEventListener('touchstart', event => {
   if (!secondTouch && touches.length) {
     secondTouch = touches.shift()
     touchDist = getDistance(firstTouch, secondTouch)
+    touchZoom = zoom
     dragMatrix = mouseMatrix.translate()
   }
 })
@@ -220,10 +218,12 @@ window.addEventListener('touchmove', event => {
   if (!first && !second) return
   if (dragMatrix) {
     let newDist = getDistance(firstTouch, secondTouch)
-    if (Math.abs(touchDist - newDist) > 10) {
-      zoom *= newDist / touchDist
-      touchDist = newDist
+    if (newDist > touchDist) {
+      newDist = Math.max(touchDist, newDist - 20)
+    } else {
+      newDist = Math.min(touchDist, newDist + 20)
     }
+    zoom = newDist / touchDist * touchZoom
   }
   render()
 })
