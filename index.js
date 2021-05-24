@@ -1,4 +1,4 @@
-import { getRegion, labelFontSize } from './field.js'
+import { getRegions, labelFontSize } from './field.js'
 import { showCard } from './card.js'
 
 let wrapper = document.querySelector('#wrapper')
@@ -46,8 +46,9 @@ async function render() {
   invMatrix = matrix.inverse()
   let m = canvasMatrix.multiply(invMatrix)
   let { e: left, f: top } = m
-  m = m.translateSelf(centerX * 2, centerY * 2)
   let { e: right, f: bottom } = m
+    .translateSelf(centerX * 2, centerY * 2)
+  
   if (top < 0 || left < 0 || 
     bottom > canvas.height || 
     right > canvas.width || 
@@ -78,56 +79,60 @@ async function render() {
     ctx.stroke()
 
     invCanvasMatrix = canvasMatrix.inverse()
-    let y2 = Math.ceil(invCanvasMatrix.f / 100)
-    let x1 = Math.floor(invCanvasMatrix.e / 100)
-    let inv = invCanvasMatrix.translate(canvas.width, canvas.height)
-    let y1 = Math.floor(inv.f / 100)
-    let x2 = Math.ceil(inv.e / 100)
+    let { e: x1, f: y2 } = invCanvasMatrix
+    let { e: x2, f: y1 } =  invCanvasMatrix
+      .translate(canvas.width, canvas.height)
 
     ctx.font = labelFontSize + 'px sans-serif'
     ctx.textAlign = 'center'
-    ctx.textBaseline = 'top'
-    for (let x = x1; x < x2; x++) {
-      for (let y = y1; y < y2; y++) {
-        let { labels, stars } = getRegion(x, y)
-        ctx.fillStyle = '#666'
-        for (let label of labels) {
-          if (label.renderCycle == renderCycle) continue
-          label.renderCycle = renderCycle
-          ctx.save()
-          ctx.translate(label.x, label.y)
-          ctx.scale(1, -1)
-          ctx.fillText(label.name, 0, 0)
-          ctx.restore()
-        }
-        for (let star of stars) {
-          if (star.renderCycle == renderCycle) continue
-          star.renderCycle = renderCycle
-          ctx.fillStyle = star.color
-          ctx.beginPath()
-          ctx.arc(star.x, star.y, star.size, 0, 2 * Math.PI)
-          ctx.fill()
-        } 
+    for (let { labels, stars } of getRegions(x1, y1, x2, y2)) {
+      ctx.fillStyle = '#666'
+      for (let label of labels) {
+        if (label.renderCycle == renderCycle) continue
+        label.renderCycle = renderCycle
+        ctx.save()
+        ctx.translate(label.x, label.y)
+        ctx.scale(1, -1)
+        ctx.fillText(label.name, 0, 0)
+        ctx.restore()
       }
+      for (let star of stars) {
+        if (star.renderCycle == renderCycle) continue
+        star.renderCycle = renderCycle
+        ctx.fillStyle = star.color
+        ctx.beginPath()
+        ctx.arc(star.x, star.y, star.size, 0, 2 * Math.PI)
+        ctx.fill()
+      } 
     }    
   }
   canvas.style.transform = matrix.multiply(invCanvasMatrix)
 }
 function updateMouseMatrixAndShowCard(isTouch) {
-  mouseMatrix = invMatrix.translate(mouseX, mouseY)    
-  let { e, f } = mouseMatrix
-  let { stars } = getRegion(Math.floor(e / 100), Math.floor(f / 100))
+  mouseMatrix = invMatrix.translate(mouseX + 10, mouseY + 10)    
+  let { e: x2, f: y1 } = mouseMatrix
+  mouseMatrix.translateSelf(-20, -20)
+  let { e: x1, f: y2 } = mouseMatrix
+  let mx = (x1 + x2) / 2
+  let my = (y1 + y2) / 2
+  mouseMatrix.translateSelf(10, 10)
   let closestStar = null
   let closestDist = Infinity
-  for (let star of stars) {
-    let dx = Math.abs(star.x - e)
-    let dy = Math.abs(star.y - f)
-    if (dx > star.size * 3 || dy > star.size * 3) continue
-    let dist = Math.max(dx, dy)
-    if (dist > closestDist) continue
-    closestDist = dist
-    closestStar = star
+  for (let { stars } of getRegions(x1, y1, x2, y2)) {
+    for (let star of stars) {
+      if (star.x < x1 - star.size || 
+          star.y < y1 - star.size ||
+          star.x > x2 + star.size || 
+          star.y > y2 + star.size) continue
+      let dx = Math.abs(star.x - mx)
+      let dy = Math.abs(star.y - my)
+      let dist = Math.sqrt(dx * dx + dy * dy)
+      if (dist > closestDist) continue
+      closestDist = dist
+      closestStar = star
+    }
   }
+
   showCard(closestStar, mouseX, mouseY, isTouch) 
   if (isTouch) {
     touchPointer.style.display = 'block'
@@ -141,10 +146,10 @@ document.addEventListener('wheel', event => {
   zoom *= event.deltaY < 0 ? 1.25 : 0.8
   render()
 })
-window.addEventListener('contextmenu', e => {
-  e.preventDefault()
+window.addEventListener('contextmenu', event => {
+  event.preventDefault()
 })
-window.addEventListener('mousedown', e => {
+window.addEventListener('mousedown', event => {
   dragMatrix = mouseMatrix.translate()
 })
 window.addEventListener('mousemove', event => {
@@ -160,12 +165,12 @@ window.addEventListener('mouseup', event => {
 function hasModifier(e) {
   return e.ctrlKey || e.altKey || e.shiftKey || e.metaKey
 }
-window.addEventListener('keydown', e => {
-  if (hasModifier(e)) return
-  if (/^F\d{1,2}/.test(e.key)) return
+window.addEventListener('keydown', event => {
+  if (hasModifier(event)) return
+  if (/^F\d{1,2}/.test(event.key)) return
   wrapper.classList.add('readme')
 })
-window.addEventListener('keyup', e => {
+window.addEventListener('keyup', event => {
   wrapper.classList.remove('readme')
 })
 window.addEventListener('resize', render)

@@ -46,8 +46,8 @@ export function showCard(star, x, y, touch) {
       canvas.style.display = 'block'
     }
     if (touch) {
-      x -= canvas.width / 2
-      y -= canvas.height
+      x = x - canvas.width / 2
+      y = y - canvas.height - 10
     } else {
       x += 10
     }

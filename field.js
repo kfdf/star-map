@@ -152,19 +152,11 @@ while (regions.length < 10) {
   regions.push(Array(10).fill(0)
     .map(_ => ({ labels: [], stars: [] })))
 }
-let outboundsRegion = { labels: [], stars: [] }
-export function getRegion(x, y) {
-  if (x < 0 || y < 0 || x >= 10 || y >= 10) {
-    return outboundsRegion
-  } else {
-    return regions[x][y]
-  }
-}
-function getRegionsForBox(x, y, w, h) {
-  let x1 = Math.floor(x / 100)
-  let y1 = Math.floor(y / 100)
-  let x2 = Math.ceil((x + w) / 100)
-  let y2 = Math.ceil((y + h) / 100)
+export function getRegions(x1, y1, x2, y2) {
+  x1 = Math.floor(x1 / 100)
+  y1 = Math.floor(y1 / 100)
+  x2 = Math.ceil(x2 / 100)
+  y2 = Math.ceil(y2 / 100)
   let ret = []
   for (let x = x1; x < x2; x++) {
     for (let y = y1; y < y2; y++) {
@@ -176,11 +168,10 @@ function getRegionsForBox(x, y, w, h) {
 }
 
 for (let star of stars) {
-  // size doubled for better mouseover detection at region borders
-  let x = star.x - star.size * 2
-  let y = star.y - star.size * 2
-  let w = star.size * 4
-  for (let region of getRegionsForBox(x, y, w, w)) {
+  let x = star.x - star.size
+  let y = star.y - star.size
+  let w = star.size * 2
+  for (let region of getRegions(x, y, x + w, y + w)) {
     region.stars.push(star)
   }
 }
@@ -188,7 +179,7 @@ for (let cluster of clusters) {
   let { width, height } = cluster
   let x = cluster.x - width / 2
   let y = cluster.y - height
-  for (let region of getRegionsForBox(x, y, width, height)) {
+  for (let region of getRegions(x, y, x + width, y + height)) {
     region.labels.push(cluster)
   }  
 }
