@@ -174,7 +174,7 @@ window.addEventListener('keyup', e => {
 window.addEventListener('resize', render)
 render()
 
-let firstTouch, secondTouch, touchZoom
+let firstTouch, secondTouch, touchDist
 
 function getSame(touch, touchEvent) {
   if (!touch) return
@@ -187,7 +187,7 @@ function getSame(touch, touchEvent) {
 function getDistance(touch, touch2) {
   let dx = touch.clientX - touch2.clientX
   let dy = touch.clientY - touch2.clientY
-  return Math.sqrt(dx * dx + dy * dy)  
+  return Math.sqrt(dx * dx + dy * dy)
 }
 window.addEventListener('touchstart', event => {
   event.preventDefault()
@@ -200,7 +200,7 @@ window.addEventListener('touchstart', event => {
   }
   if (!secondTouch && touches.length) {
     secondTouch = touches.shift()
-    touchZoom = zoom / getDistance(firstTouch, secondTouch)
+    touchDist = getDistance(firstTouch, secondTouch)
     dragMatrix = mouseMatrix.translate()
   }
 })
@@ -219,7 +219,11 @@ window.addEventListener('touchmove', event => {
   }
   if (!first && !second) return
   if (dragMatrix) {
-    zoom = touchZoom * getDistance(firstTouch, secondTouch)
+    let newDist = getDistance(firstTouch, secondTouch)
+    if (Math.abs(touchDist - newDist) > 10) {
+      zoom *= newDist / touchDist
+      touchDist = newDist
+    }
   }
   render()
 })
