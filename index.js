@@ -46,8 +46,8 @@ async function render() {
   invMatrix = matrix.inverse()
   let m = canvasMatrix.multiply(invMatrix)
   let { e: left, f: top } = m
+  m.translateSelf(centerX * 2, centerY * 2)
   let { e: right, f: bottom } = m
-    .translateSelf(centerX * 2, centerY * 2)
   
   if (top < 0 || left < 0 || 
     bottom > canvas.height || 
@@ -77,7 +77,7 @@ async function render() {
     ctx.lineCap = 'square'
     ctx.strokeStyle = '#444'    
     ctx.stroke()
-
+    
     invCanvasMatrix = canvasMatrix.inverse()
     let { e: x1, f: y2 } = invCanvasMatrix
     let { e: x2, f: y1 } =  invCanvasMatrix
@@ -85,6 +85,7 @@ async function render() {
 
     ctx.font = labelFontSize + 'px sans-serif'
     ctx.textAlign = 'center'
+    ctx.textBaseline = 'top'
     for (let { labels, stars } of getRegions(x1, y1, x2, y2)) {
       ctx.fillStyle = '#666'
       for (let label of labels) {
